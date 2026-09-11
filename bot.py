@@ -53,6 +53,7 @@ from database import (
 import os
 
 TOKEN = os.getenv("BOT_TOKEN")
+application = ApplicationBuilder().token(TOKEN).build()
 
 
 # =========================================================
