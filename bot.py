@@ -52,7 +52,7 @@ from database import (
 
 import os
 
-TOKEN = os.getenv("8711198715:AAG0RvJcuoE3YaXXPUQ1oi68ZmVgsFh2v2M")
+TOKEN = os.getenv("BOT_TOKEN")
 
 
 # =========================================================
