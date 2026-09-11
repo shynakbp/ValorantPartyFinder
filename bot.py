@@ -1,3 +1,4 @@
+import os
 from telegram import (
     Update,
     InlineKeyboardButton,
@@ -5,7 +6,7 @@ from telegram import (
 )
 
 from telegram.ext import (
-    Application,
+    ApplicationBuilder,
     CommandHandler,
     CallbackQueryHandler,
     ContextTypes,
@@ -47,24 +48,14 @@ from database import (
 
 
 # =========================================================
-# TOKEN
+# TOKEN (خواندن از متغیر محیطی Railway)
 # =========================================================
 
-import os
-
 TOKEN = os.getenv("BOT_TOKEN")
-application = ApplicationBuilder().token(TOKEN).build()
 
 
 # =========================================================
 # ADMIN
-# =========================================================
-#
-# اینجا Telegram ID خودت را قرار بده.
-#
-# مثال:
-# ADMIN_IDS = {908592959}
-#
 # =========================================================
 
 ADMIN_IDS = {
@@ -282,9 +273,6 @@ async def save_my_rank(
         rank_name
     )
 
-    # بررسی Partyهای فعال
-    # با رنک انتخاب‌شده
-
     active_parties = get_active_parties_for_rank(
         rank_name
     )
@@ -426,8 +414,6 @@ async def find_player(
 
         return
 
-    # شروع انتخاب رنک‌ها
-
     context.user_data[
         "required_ranks"
     ] = []
@@ -477,7 +463,6 @@ async def show_required_ranks(
     if row:
         keyboard.append(row)
 
-    # تعداد انتخاب
     keyboard.append([
         InlineKeyboardButton(
             f"✅ تأیید رنک‌ها ({len(selected)}/3)",
@@ -536,7 +521,6 @@ async def select_required_rank(
         []
     )
 
-    # اگر قبلاً انتخاب شده بود
     if rank_name in selected:
 
         selected.remove(rank_name)
@@ -872,15 +856,13 @@ async def receive_party_code(
 
                 return
 
-    # پیام کاربر به ادمین
-
     if context.user_data.get(
         "contact_admin"
     ):
 
         text = update.message.text.strip()
 
-        message_id = save_admin_message(
+        save_admin_message(
             user_id,
             text
         )
@@ -890,8 +872,6 @@ async def receive_party_code(
             "به‌زودی پاسخ دریافت می‌کنی.",
             reply_markup=main_menu()
         )
-
-        # ارسال به تمام ادمین‌ها
 
         username = (
             f"@{user.username}"
@@ -933,8 +913,6 @@ async def receive_party_code(
         context.user_data.clear()
 
         return
-
-    # Party Code
 
     if not context.user_data.get(
         "waiting_for_party_code"
@@ -1008,9 +986,6 @@ async def receive_party_code(
 
         return
 
-    # برای دیتابیس فعلی
-    # رنک‌ها را با + ذخیره می‌کنیم
-
     required_ranks_text = " + ".join(
         required_ranks
     )
@@ -1023,15 +998,6 @@ async def receive_party_code(
     )
 
     context.user_data.clear()
-
-    # ارسال Offer به بازیکنان مناسب
-    #
-    # برای چند رنک، هر رنک را جدا بررسی می‌کنیم.
-    #
-    # فعلاً ساختار DB یک رشته مثل:
-    # Gold + Platinum + Diamond
-    #
-    # را نگه می‌دارد.
 
     all_users = get_all_users()
 
@@ -1205,7 +1171,6 @@ async def accept_party(
 
         return
 
-    # قبول
     set_match_status(
         party_id,
         user_id,
@@ -1225,8 +1190,6 @@ async def accept_party(
         "وارد Valorant شو و با این کد به Party ملحق شو.",
         parse_mode="Markdown"
     )
-
-    # اطلاع سازنده
 
     try:
 
@@ -1250,8 +1213,6 @@ async def accept_party(
     except Exception:
         pass
 
-    # Party کامل شد
-
     if new_count >= players_needed:
 
         mark_party_filled(
@@ -1273,7 +1234,6 @@ async def accept_party(
 
     else:
 
-        # اگر هنوز جا دارد، بازیکن جایگزین پیدا کن
         await fill_party_offers(
             context.bot,
             party_id
@@ -1344,7 +1304,6 @@ async def reject_party(
         reply_markup=main_menu()
     )
 
-    # نفر جایگزین
     await fill_party_offers(
         context.bot,
         party_id
@@ -2374,8 +2333,7 @@ def main():
     expire_old_parties()
 
     app = (
-        Application
-        .builder()
+        ApplicationBuilder()
         .token(TOKEN)
         .build()
     )
